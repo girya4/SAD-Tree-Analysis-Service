@@ -296,6 +296,35 @@
             color: #721c24;
         }
 
+        .task-content {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        .task-image {
+            flex-shrink: 0;
+        }
+
+        .task-thumbnail {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .task-thumbnail:hover {
+            transform: scale(1.05);
+            border-color: #4facfe;
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .task-info {
+            flex: 1;
+        }
+
         .task-details {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -589,6 +618,34 @@
 
                 let tasksHTML = '';
                 
+                /* 
+                 * ML DATA CONFIGURATION GUIDE:
+                 * 
+                 * To modify ML output data structure, update these sections:
+                 * 
+                 * 1. TREE TYPES: Modify the formatTreeType() function below
+                 *    - Add new tree types in the switch statement
+                 *    - Update the display logic as needed
+                 * 
+                 * 2. DAMAGE TYPES: Update the formatDamageType() function below
+                 *    - Add new damage types in the replace logic
+                 *    - Modify the display format if needed
+                 * 
+                 * 3. HEALTH SCORES: Update getHealthClass() and getHealthText() functions
+                 *    - Modify score thresholds (currently 0.7, 0.4)
+                 *    - Add new health categories if needed
+                 * 
+                 * 4. DAMAGE DISPLAY: Update the damages rendering section
+                 *    - Modify damage item structure in the forEach loop
+                 *    - Add new damage properties if ML returns more data
+                 * 
+                 * 5. TASK DATA: Update the task object access
+                 *    - Add new fields from ML results (task.new_field)
+                 *    - Update the display logic accordingly
+                 * 
+                 * Note: Changes here won't break the database - new fields are optional
+                 */
+                
                 this.tasks.forEach(task => {
                     const statusClass = task.status;
                     const healthScore = task.overall_health_score;
@@ -614,6 +671,10 @@
                         }
                     }
 
+                    // Get image filename from original_path
+                    const imageFilename = task.original_path.split('/').pop();
+                    const imageUrl = `/static/uploads/original/${imageFilename}`;
+                    
                     tasksHTML += `
                         <div class="task-item ${statusClass}">
                             <div class="task-header">
@@ -621,29 +682,38 @@
                                 <span class="task-status ${statusClass}">${statusClass}</span>
                             </div>
                             
-                            <div class="task-details">
-                                <div class="task-detail">
-                                    <div class="task-detail-label">Tree Type</div>
-                                    <div class="task-detail-value">${task.tree_type ? this.formatTreeType(task.tree_type) : 'Unknown'}</div>
+                            <div class="task-content">
+                                <div class="task-image">
+                                    <img src="${imageUrl}" alt="Tree Image" class="task-thumbnail" 
+                                         onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y4ZjlmYSIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjEyIiBmaWxsPSIjNjY2IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW1hZ2UgTm90IEZvdW5kPC90ZXh0Pjwvc3ZnPg=='">
                                 </div>
                                 
-                                <div class="task-detail">
-                                    <div class="task-detail-label">Confidence</div>
-                                    <div class="task-detail-value">${task.tree_type_confidence ? (task.tree_type_confidence * 100).toFixed(1) + '%' : 'N/A'}</div>
-                                </div>
-                                
-                                <div class="task-detail">
-                                    <div class="task-detail-label">Health Score</div>
-                                    <div class="task-detail-value health-score ${healthClass}">${healthText}</div>
-                                </div>
-                                
-                                <div class="task-detail">
-                                    <div class="task-detail-label">Created</div>
-                                    <div class="task-detail-value">${new Date(task.created_at).toLocaleString()}</div>
+                                <div class="task-info">
+                                    <div class="task-details">
+                                        <div class="task-detail">
+                                            <div class="task-detail-label">Tree Type</div>
+                                            <div class="task-detail-value">${task.tree_type ? this.formatTreeType(task.tree_type) : 'Unknown'}</div>
+                                        </div>
+                                        
+                                        <div class="task-detail">
+                                            <div class="task-detail-label">Confidence</div>
+                                            <div class="task-detail-value">${task.tree_type_confidence ? (task.tree_type_confidence * 100).toFixed(1) + '%' : 'N/A'}</div>
+                                        </div>
+                                        
+                                        <div class="task-detail">
+                                            <div class="task-detail-label">Health Score</div>
+                                            <div class="task-detail-value health-score ${healthClass}">${healthText}</div>
+                                        </div>
+                                        
+                                        <div class="task-detail">
+                                            <div class="task-detail-label">Created</div>
+                                            <div class="task-detail-value">${new Date(task.created_at).toLocaleString()}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    ${damagesHTML ? `<div style="margin-top: 15px;"><strong>Detected Issues:</strong>${damagesHTML}</div>` : ''}
                                 </div>
                             </div>
-                            
-                            ${damagesHTML ? `<div style="margin-top: 15px;"><strong>Detected Issues:</strong>${damagesHTML}</div>` : ''}
                         </div>
                     `;
                 });
@@ -666,11 +736,40 @@
             }
 
             formatTreeType(type) {
-                return type.charAt(0).toUpperCase() + type.slice(1);
+                // ML TREE TYPE CONFIGURATION:
+                // Add new tree types here when ML model is updated
+                // This function handles display formatting only
+                switch(type) {
+                    case 'oak': return 'Oak';
+                    case 'pine': return 'Pine';
+                    case 'birch': return 'Birch';
+                    case 'maple': return 'Maple';
+                    case 'cherry': return 'Cherry';
+                    case 'unknown': return 'Unknown';
+                    // Add new tree types here:
+                    // case 'new_type': return 'New Type';
+                    default: return type.charAt(0).toUpperCase() + type.slice(1);
+                }
             }
 
             formatDamageType(type) {
-                return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                // ML DAMAGE TYPE CONFIGURATION:
+                // Add new damage types here when ML model is updated
+                // This function handles display formatting only
+                const damageTypes = {
+                    'insect_damage': 'Insect Damage',
+                    'fungal_infection': 'Fungal Infection',
+                    'bark_damage': 'Bark Damage',
+                    'leaf_discoloration': 'Leaf Discoloration',
+                    'branch_breakage': 'Branch Breakage',
+                    'root_damage': 'Root Damage',
+                    'drought_stress': 'Drought Stress',
+                    'nutrient_deficiency': 'Nutrient Deficiency'
+                    // Add new damage types here:
+                    // 'new_damage_type': 'New Damage Type'
+                };
+                
+                return damageTypes[type] || type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
             }
 
             startAutoRefresh() {

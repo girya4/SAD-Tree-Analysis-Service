@@ -46,7 +46,24 @@ class MLTreeAnalyzer:
         return results
     
     def _generate_mock_results(self) -> Dict:
-        """Generate realistic mock analysis results"""
+        """
+        Generate realistic mock analysis results
+        
+        ML OUTPUT CONFIGURATION:
+        ========================
+        
+        To add new output fields:
+        1. Add new fields to the return dictionary below
+        2. Update database model in app/models/task.py (optional - new fields are nullable)
+        3. Update API schemas in app/api/schemas.py
+        4. Update frontend rendering in frontend/index.html
+        
+        To modify existing fields:
+        1. Update the field generation logic below
+        2. Update frontend display logic if needed
+        
+        Note: Database changes are optional - new fields are nullable by default
+        """
         
         # Determine tree type based on probabilities
         tree_type = self._select_tree_type()
@@ -58,13 +75,28 @@ class MLTreeAnalyzer:
         # Calculate overall health score
         health_score = self._calculate_health_score(damages, tree_confidence)
         
-        return {
+        # =============================================================================
+        # ML OUTPUT DATA STRUCTURE
+        # =============================================================================
+        # Add new fields here when ML model is updated
+        # All fields are optional and nullable in the database
+        
+        results = {
+            # Core ML outputs
             'tree_type': tree_type.value,
             'tree_type_confidence': round(tree_confidence, 3),
             'damages_detected': damages,
             'overall_health_score': round(health_score, 3),
-            'analysis_timestamp': time.time()
+            
+            # Metadata
+            'analysis_timestamp': time.time(),
+            
+            # Add new ML output fields here:
+            # 'new_field': new_value,
+            # 'additional_analysis': additional_data,
         }
+        
+        return results
     
     def _select_tree_type(self) -> TreeType:
         """Select tree type based on probabilities"""

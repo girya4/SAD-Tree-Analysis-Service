@@ -1,6 +1,32 @@
 """
 ML Configuration for Tree Analysis
 Easy to modify mock results and behavior
+
+CONFIGURATION GUIDE:
+===================
+
+To modify ML output data structure:
+
+1. TREE TYPES: Update TREE_TYPE_PROBABILITIES and TreeType enum
+   - Add new tree types to TreeType enum in app/models/task.py
+   - Add probabilities here
+   - Update frontend formatTreeType() function
+
+2. DAMAGE TYPES: Update DAMAGE_TYPE_PROBABILITIES and DamageType enum
+   - Add new damage types to DamageType enum in app/models/task.py
+   - Add probabilities here
+   - Update frontend formatDamageType() function
+
+3. NEW OUTPUT FIELDS: Add to _generate_mock_results() in ml_tree_analyzer.py
+   - Add new fields to the returned dictionary
+   - Update database model if needed (optional - new fields are nullable)
+   - Update frontend rendering
+
+4. INPUT PARAMETERS: Modify analyze_tree() method signature
+   - Add new parameters to the method
+   - Update additional_params handling
+
+Note: Database changes are optional - new fields are nullable by default
 """
 from typing import Dict, List, Tuple
 from app.models.task import TreeType, DamageType
@@ -9,15 +35,27 @@ from app.models.task import TreeType, DamageType
 class MLConfig:
     """Configuration for ML tree analysis mock"""
     
-    # Processing time range (seconds)
+    # =============================================================================
+    # PROCESSING CONFIGURATION
+    # =============================================================================
+    
+    # Processing time range (seconds) - simulate ML processing time
     PROCESSING_TIME_RANGE = (5, 25)
     
-    # Confidence ranges
+    # Confidence ranges for different ML outputs
     TREE_CONFIDENCE_RANGE = (0.65, 0.95)
     DAMAGE_CONFIDENCE_RANGE = (0.45, 0.90)
     HEALTH_SCORE_RANGE = (0.3, 0.9)
     
-    # Tree type probabilities (can be modified to change distribution)
+    # =============================================================================
+    # TREE TYPE CONFIGURATION
+    # =============================================================================
+    # To add new tree types:
+    # 1. Add to TreeType enum in app/models/task.py
+    # 2. Add probability here (must sum to 1.0)
+    # 3. Update frontend formatTreeType() function
+    # 4. Add description in TREE_TYPE_DESCRIPTIONS below
+    
     TREE_TYPE_PROBABILITIES = {
         TreeType.OAK: 0.25,
         TreeType.PINE: 0.20,
@@ -25,9 +63,20 @@ class MLConfig:
         TreeType.MAPLE: 0.15,
         TreeType.CHERRY: 0.10,
         TreeType.UNKNOWN: 0.15
+        # Add new tree types here:
+        # TreeType.NEW_TYPE: 0.05
     }
     
-    # Damage type probabilities
+    # =============================================================================
+    # DAMAGE TYPE CONFIGURATION
+    # =============================================================================
+    # To add new damage types:
+    # 1. Add to DamageType enum in app/models/task.py
+    # 2. Add probability here (relative weights, not required to sum to 1.0)
+    # 3. Update frontend formatDamageType() function
+    # 4. Add description in DAMAGE_DESCRIPTIONS below
+    # 5. Add treatment recommendations in TREATMENT_RECOMMENDATIONS below
+    
     DAMAGE_TYPE_PROBABILITIES = {
         DamageType.INSECT_DAMAGE: 0.20,
         DamageType.FUNGAL_INFECTION: 0.15,
@@ -37,6 +86,8 @@ class MLConfig:
         DamageType.ROOT_DAMAGE: 0.08,
         DamageType.DROUGHT_STRESS: 0.10,
         DamageType.NUTRIENT_DEFICIENCY: 0.07
+        # Add new damage types here:
+        # DamageType.NEW_DAMAGE: 0.05
     }
     
     # Severity probabilities

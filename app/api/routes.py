@@ -184,7 +184,7 @@ async def get_user_tasks(
         # Get total count
         total = db.query(Task).filter(Task.user_id == user.id).count()
         
-        # Get tasks with pagination
+        # Get tasks with pagination - newest first
         tasks = db.query(Task).filter(Task.user_id == user.id)\
             .order_by(Task.created_at.desc())\
             .offset(offset)\

@@ -147,9 +147,34 @@ make docker-down   # Остановить все Docker сервисы
 
 ### Demo Commands
 ```bash
+make demo-v2.1  # Run enhanced UI demo with image thumbnails
 make demo-v2    # Run ML tree analysis demo
 make demo       # Run basic image processing demo
 ```
+
+## 🖼️ Enhanced UI Features (v2.1)
+
+### Image Thumbnails
+- Tree images displayed next to each task
+- Hover effects and responsive design
+- Fallback for missing images
+
+### Smart Task Ordering
+- Newest tasks appear at the top
+- Chronological sorting by creation time
+- Better user experience
+
+### Flexible ML Configuration
+- Easy-to-modify ML mock service
+- Comprehensive configuration comments
+- Database-compatible field changes
+- Frontend adaptation guides
+
+### ML Configuration Guide
+- Clear instructions for adding new tree types
+- Damage type configuration examples
+- Output field modification guides
+- Database migration notes
 
 ## Структура проекта
 
