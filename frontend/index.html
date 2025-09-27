@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image Processing Service</title>
+    <title>Tree Analysis Service</title>
     <style>
         * {
             margin: 0;
@@ -226,68 +226,197 @@
             font-family: monospace;
             font-size: 0.9em;
         }
+
+        .tasks-section {
+            margin-top: 30px;
+        }
+
+        .task-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #4facfe;
+            transition: all 0.3s ease;
+        }
+
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .task-item.completed {
+            border-left-color: #28a745;
+        }
+
+        .task-item.failed {
+            border-left-color: #dc3545;
+        }
+
+        .task-item.processing {
+            border-left-color: #ffc107;
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .task-id {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .task-status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .task-status.pending {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+
+        .task-status.processing {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .task-status.completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .task-status.failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .task-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .task-detail {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .task-detail-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .task-detail-value {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .damage-item {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px 0;
+        }
+
+        .damage-type {
+            font-weight: bold;
+            color: #856404;
+        }
+
+        .damage-severity {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            margin-left: 10px;
+        }
+
+        .damage-severity.low {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .damage-severity.medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .damage-severity.high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .health-score {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .health-score.good {
+            color: #28a745;
+        }
+
+        .health-score.fair {
+            color: #ffc107;
+        }
+
+        .health-score.poor {
+            color: #dc3545;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🖼️ Image Processing Service</h1>
-            <p>Upload and process your images with AI-powered processing</p>
+            <h1>🌳 Tree Analysis Service</h1>
+            <p>Upload tree images for AI-powered health analysis and damage detection</p>
         </div>
 
         <div class="content">
             <div class="upload-section">
                 <div class="upload-area" id="uploadArea">
-                    <div class="upload-icon">📁</div>
+                    <div class="upload-icon">🌳</div>
                     <div class="upload-text">
-                        <strong>Click to upload</strong> or drag and drop your image here
+                        <strong>Click to upload</strong> or drag and drop tree images here
                     </div>
                     <div style="color: #999; font-size: 0.9em;">
-                        Supports: JPG, PNG, GIF, BMP (Max: 10MB)
+                        Supports: JPG, PNG, GIF, BMP (Max: 10MB each, up to 10 files)
                     </div>
-                    <input type="file" id="fileInput" class="file-input" accept="image/*">
+                    <input type="file" id="fileInput" class="file-input" accept="image/*" multiple>
                 </div>
                 
                 <div style="text-align: center; margin-top: 20px;">
-                    <button class="btn" id="uploadBtn" disabled>Upload Image</button>
-                    <button class="btn" id="checkStatusBtn" disabled>Check Status</button>
+                    <button class="btn" id="uploadBtn" disabled>Upload Images</button>
+                    <button class="btn" id="refreshBtn">Refresh Tasks</button>
                 </div>
             </div>
 
-            <div class="status-section" id="statusSection">
-                <h3>Processing Status</h3>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
-                </div>
-                
-                <div class="status-item">
-                    <span class="status-label">Task ID:</span>
-                    <span class="status-value" id="taskId">-</span>
-                </div>
-                
-                <div class="status-item">
-                    <span class="status-label">Status:</span>
-                    <span class="status-value" id="taskStatus">-</span>
-                </div>
-                
-                <div class="status-item">
-                    <span class="status-label">Progress:</span>
-                    <span class="status-value" id="taskProgress">-</span>
-                </div>
+            <div class="tasks-section" id="tasksSection">
+                <h3>Tree Analysis Tasks</h3>
+                <div id="tasksList"></div>
             </div>
 
             <div id="imagePreview"></div>
-            <div id="metadata"></div>
             <div id="messages"></div>
         </div>
     </div>
 
     <script>
-        class ImageProcessor {
+        class TreeAnalysisService {
             constructor() {
-                this.taskId = null;
                 this.sessionCookie = null;
-                this.checkInterval = null;
+                this.selectedFiles = [];
+                this.tasks = [];
+                this.refreshInterval = null;
                 
                 this.initializeElements();
                 this.setupEventListeners();
@@ -298,14 +427,9 @@
                 this.uploadArea = document.getElementById('uploadArea');
                 this.fileInput = document.getElementById('fileInput');
                 this.uploadBtn = document.getElementById('uploadBtn');
-                this.checkStatusBtn = document.getElementById('checkStatusBtn');
-                this.statusSection = document.getElementById('statusSection');
-                this.taskId = document.getElementById('taskId');
-                this.taskStatus = document.getElementById('taskStatus');
-                this.taskProgress = document.getElementById('taskProgress');
-                this.progressFill = document.getElementById('progressFill');
+                this.refreshBtn = document.getElementById('refreshBtn');
+                this.tasksList = document.getElementById('tasksList');
                 this.imagePreview = document.getElementById('imagePreview');
-                this.metadata = document.getElementById('metadata');
                 this.messages = document.getElementById('messages');
             }
 
@@ -315,8 +439,8 @@
                 this.uploadArea.addEventListener('dragleave', this.handleDragLeave.bind(this));
                 this.uploadArea.addEventListener('drop', this.handleDrop.bind(this));
                 this.fileInput.addEventListener('change', this.handleFileSelect.bind(this));
-                this.uploadBtn.addEventListener('click', this.uploadImage.bind(this));
-                this.checkStatusBtn.addEventListener('click', this.checkStatus.bind(this));
+                this.uploadBtn.addEventListener('click', this.uploadImages.bind(this));
+                this.refreshBtn.addEventListener('click', this.loadTasks.bind(this));
             }
 
             async initializeSession() {
@@ -327,6 +451,7 @@
                     const data = await response.json();
                     this.sessionCookie = data.cookie_token;
                     this.showMessage('Session initialized successfully', 'success');
+                    this.loadTasks();
                 } catch (error) {
                     this.showMessage('Failed to initialize session: ' + error.message, 'error');
                 }
@@ -345,57 +470,73 @@
             handleDrop(e) {
                 e.preventDefault();
                 this.uploadArea.classList.remove('dragover');
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    this.handleFile(files[0]);
-                }
+                const files = Array.from(e.dataTransfer.files);
+                this.handleFiles(files);
             }
 
             handleFileSelect(e) {
-                const file = e.target.files[0];
-                if (file) {
-                    this.handleFile(file);
-                }
+                const files = Array.from(e.target.files);
+                this.handleFiles(files);
             }
 
-            handleFile(file) {
-                if (!file.type.startsWith('image/')) {
-                    this.showMessage('Please select an image file', 'error');
-                    return;
-                }
-
-                if (file.size > 10 * 1024 * 1024) {
-                    this.showMessage('File size must be less than 10MB', 'error');
-                    return;
-                }
-
-                this.selectedFile = file;
-                this.uploadBtn.disabled = false;
+            handleFiles(files) {
+                this.selectedFiles = [];
                 
-                // Show preview
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    this.imagePreview.innerHTML = `
-                        <h4>Selected Image:</h4>
-                        <img src="${e.target.result}" class="image-preview" alt="Preview">
-                        <p><strong>File:</strong> ${file.name}</p>
-                        <p><strong>Size:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                    `;
-                };
-                reader.readAsDataURL(file);
+                for (const file of files) {
+                    if (!file.type.startsWith('image/')) {
+                        this.showMessage(`File ${file.name} is not an image`, 'error');
+                        continue;
+                    }
+
+                    if (file.size > 10 * 1024 * 1024) {
+                        this.showMessage(`File ${file.name} is too large (max 10MB)`, 'error');
+                        continue;
+                    }
+
+                    this.selectedFiles.push(file);
+                }
+
+                if (this.selectedFiles.length > 0) {
+                    this.uploadBtn.disabled = false;
+                    this.showFilePreview();
+                } else {
+                    this.uploadBtn.disabled = true;
+                    this.imagePreview.innerHTML = '';
+                }
             }
 
-            async uploadImage() {
-                if (!this.selectedFile) return;
+            showFilePreview() {
+                let previewHTML = `<h4>Selected Images (${this.selectedFiles.length}):</h4>`;
+                
+                this.selectedFiles.forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        previewHTML += `
+                            <div style="display: inline-block; margin: 10px; text-align: center;">
+                                <img src="${e.target.result}" style="max-width: 150px; max-height: 150px; border-radius: 5px; margin-bottom: 5px;" alt="Preview">
+                                <div style="font-size: 0.8em; color: #666;">${file.name}</div>
+                                <div style="font-size: 0.7em; color: #999;">${(file.size / 1024 / 1024).toFixed(2)} MB</div>
+                            </div>
+                        `;
+                        this.imagePreview.innerHTML = previewHTML;
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            async uploadImages() {
+                if (this.selectedFiles.length === 0) return;
 
                 this.uploadBtn.disabled = true;
                 this.uploadBtn.innerHTML = '<span class="loading"></span> Uploading...';
 
                 const formData = new FormData();
-                formData.append('file', this.selectedFile);
+                this.selectedFiles.forEach(file => {
+                    formData.append('files', file);
+                });
 
                 try {
-                    const response = await fetch('/api/newTask', {
+                    const response = await fetch('/api/newTasks', {
                         method: 'POST',
                         body: formData,
                         credentials: 'include'
@@ -404,110 +545,142 @@
                     const data = await response.json();
                     
                     if (response.ok) {
-                        this.taskId = data.task_id;
-                        this.showMessage('Image uploaded successfully! Task ID: ' + this.taskId, 'success');
-                        this.statusSection.classList.add('show');
-                        this.checkStatusBtn.disabled = false;
-                        this.startStatusChecking();
+                        this.showMessage(`Successfully uploaded ${data.task_ids.length} images!`, 'success');
+                        this.selectedFiles = [];
+                        this.fileInput.value = '';
+                        this.imagePreview.innerHTML = '';
+                        this.loadTasks();
+                        this.startAutoRefresh();
                     } else {
                         this.showMessage('Upload failed: ' + data.detail, 'error');
                     }
                 } catch (error) {
                     this.showMessage('Upload error: ' + error.message, 'error');
                 } finally {
-                    this.uploadBtn.disabled = false;
-                    this.uploadBtn.innerHTML = 'Upload Image';
+                    this.uploadBtn.disabled = true;
+                    this.uploadBtn.innerHTML = 'Upload Images';
                 }
             }
 
-            async checkStatus() {
-                if (!this.taskId) return;
-
+            async loadTasks() {
                 try {
-                    const response = await fetch(`/api/isReady/${this.taskId}`, {
+                    const response = await fetch('/api/tasks?per_page=50', {
                         credentials: 'include'
                     });
 
                     const data = await response.json();
                     
                     if (response.ok) {
-                        this.updateStatus(data);
+                        this.tasks = data.tasks;
+                        this.renderTasks();
                     } else {
-                        this.showMessage('Failed to check status: ' + data.detail, 'error');
+                        this.showMessage('Failed to load tasks: ' + data.detail, 'error');
                     }
                 } catch (error) {
-                    this.showMessage('Status check error: ' + error.message, 'error');
+                    this.showMessage('Error loading tasks: ' + error.message, 'error');
                 }
             }
 
-            updateStatus(data) {
-                document.getElementById('taskId').textContent = data.id;
-                document.getElementById('taskStatus').textContent = data.status;
-                document.getElementById('taskStatus').className = `status-value ${data.status}`;
-
-                let progress = 0;
-                let progressText = '';
-
-                switch (data.status) {
-                    case 'pending':
-                        progress = 25;
-                        progressText = 'Queued for processing';
-                        break;
-                    case 'processing':
-                        progress = 50;
-                        progressText = 'Processing image...';
-                        break;
-                    case 'completed':
-                        progress = 100;
-                        progressText = 'Processing completed!';
-                        this.stopStatusChecking();
-                        this.showCompletedResult(data);
-                        break;
-                    case 'failed':
-                        progress = 0;
-                        progressText = 'Processing failed';
-                        this.stopStatusChecking();
-                        this.showMessage('Image processing failed', 'error');
-                        break;
+            renderTasks() {
+                if (this.tasks.length === 0) {
+                    this.tasksList.innerHTML = '<p style="text-align: center; color: #666; margin: 20px 0;">No tasks found. Upload some tree images to get started!</p>';
+                    return;
                 }
 
-                this.progressFill.style.width = progress + '%';
-                document.getElementById('taskProgress').textContent = progressText;
-            }
-
-            showCompletedResult(data) {
-                this.showMessage('Image processing completed successfully!', 'success');
+                let tasksHTML = '';
                 
-                if (data.task_metadata) {
-                    try {
-                        const metadata = JSON.parse(data.task_metadata);
-                        this.metadata.innerHTML = `
-                            <h4>Processing Results:</h4>
-                            <div class="metadata">
-                                <div><strong>Original Size:</strong> ${metadata.original_size} bytes</div>
-                                <div><strong>Processed Size:</strong> ${metadata.processed_size} bytes</div>
-                                <div><strong>Original Dimensions:</strong> ${metadata.original_dimensions[0]}x${metadata.original_dimensions[1]}</div>
-                                <div><strong>Processed Dimensions:</strong> ${metadata.processed_dimensions[0]}x${metadata.processed_dimensions[1]}</div>
-                                <div><strong>Compression Ratio:</strong> ${((1 - metadata.processed_size / metadata.original_size) * 100).toFixed(1)}%</div>
-                            </div>
-                        `;
-                    } catch (e) {
-                        console.error('Failed to parse metadata:', e);
+                this.tasks.forEach(task => {
+                    const statusClass = task.status;
+                    const healthScore = task.overall_health_score;
+                    const healthClass = this.getHealthClass(healthScore);
+                    const healthText = this.getHealthText(healthScore);
+                    
+                    let damagesHTML = '';
+                    if (task.damages_detected) {
+                        try {
+                            const damages = JSON.parse(task.damages_detected);
+                            damages.forEach(damage => {
+                                damagesHTML += `
+                                    <div class="damage-item">
+                                        <span class="damage-type">${this.formatDamageType(damage.type)}</span>
+                                        <span class="damage-severity ${damage.severity}">${damage.severity}</span>
+                                        <div style="font-size: 0.8em; margin-top: 5px;">${damage.description}</div>
+                                        <div style="font-size: 0.7em; color: #666; margin-top: 3px;">Confidence: ${(damage.confidence * 100).toFixed(1)}%</div>
+                                    </div>
+                                `;
+                            });
+                        } catch (e) {
+                            console.error('Failed to parse damages:', e);
+                        }
                     }
-                }
+
+                    tasksHTML += `
+                        <div class="task-item ${statusClass}">
+                            <div class="task-header">
+                                <span class="task-id">Task #${task.id}</span>
+                                <span class="task-status ${statusClass}">${statusClass}</span>
+                            </div>
+                            
+                            <div class="task-details">
+                                <div class="task-detail">
+                                    <div class="task-detail-label">Tree Type</div>
+                                    <div class="task-detail-value">${task.tree_type ? this.formatTreeType(task.tree_type) : 'Unknown'}</div>
+                                </div>
+                                
+                                <div class="task-detail">
+                                    <div class="task-detail-label">Confidence</div>
+                                    <div class="task-detail-value">${task.tree_type_confidence ? (task.tree_type_confidence * 100).toFixed(1) + '%' : 'N/A'}</div>
+                                </div>
+                                
+                                <div class="task-detail">
+                                    <div class="task-detail-label">Health Score</div>
+                                    <div class="task-detail-value health-score ${healthClass}">${healthText}</div>
+                                </div>
+                                
+                                <div class="task-detail">
+                                    <div class="task-detail-label">Created</div>
+                                    <div class="task-detail-value">${new Date(task.created_at).toLocaleString()}</div>
+                                </div>
+                            </div>
+                            
+                            ${damagesHTML ? `<div style="margin-top: 15px;"><strong>Detected Issues:</strong>${damagesHTML}</div>` : ''}
+                        </div>
+                    `;
+                });
+
+                this.tasksList.innerHTML = tasksHTML;
             }
 
-            startStatusChecking() {
-                this.checkInterval = setInterval(() => {
-                    this.checkStatus();
-                }, 2000);
+            getHealthClass(score) {
+                if (score === null) return '';
+                if (score >= 0.7) return 'good';
+                if (score >= 0.4) return 'fair';
+                return 'poor';
             }
 
-            stopStatusChecking() {
-                if (this.checkInterval) {
-                    clearInterval(this.checkInterval);
-                    this.checkInterval = null;
+            getHealthText(score) {
+                if (score === null) return 'N/A';
+                if (score >= 0.7) return 'Good';
+                if (score >= 0.4) return 'Fair';
+                return 'Poor';
+            }
+
+            formatTreeType(type) {
+                return type.charAt(0).toUpperCase() + type.slice(1);
+            }
+
+            formatDamageType(type) {
+                return type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            }
+
+            startAutoRefresh() {
+                if (this.refreshInterval) {
+                    clearInterval(this.refreshInterval);
                 }
+                
+                this.refreshInterval = setInterval(() => {
+                    this.loadTasks();
+                }, 3000);
             }
 
             showMessage(message, type) {
@@ -524,7 +697,7 @@
 
         // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
-            new ImageProcessor();
+            new TreeAnalysisService();
         });
     </script>
 </body>

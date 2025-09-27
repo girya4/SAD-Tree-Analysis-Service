@@ -1,10 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request, UploadFile, File, Response
+from fastapi import APIRouter, Depends, HTTPException, status, Request, UploadFile, File, Response, Query
 from sqlalchemy.orm import Session
+from typing import List, Optional
 from app.core.database import get_db
 from app.core.auth import get_current_user, verify_task_ownership, generate_cookie_token
 from app.models.task import Task, TaskStatus
 from app.models.user import User
-from app.api.schemas import TaskResponse, TaskStatusResponse, NewTaskResponse, WebhookPayload
+from app.api.schemas import (
+    TaskResponse, TaskStatusResponse, NewTaskResponse, NewTasksResponse, 
+    WebhookPayload, TaskListResponse
+)
 from app.utils.file_utils import validate_file, generate_unique_filename, save_uploaded_file
 from app.services.image_processor import process_image
 from config import settings
@@ -103,6 +107,104 @@ async def create_new_task(
         )
 
 
+@router.post("/api/newTasks", response_model=NewTasksResponse)
+async def create_multiple_tasks(
+    request: Request,
+    files: List[UploadFile] = File(...),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Create multiple image processing tasks"""
+    try:
+        if len(files) > 10:  # Limit to 10 files per request
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Maximum 10 files allowed per request"
+            )
+        
+        task_ids = []
+        
+        for file in files:
+            # Validate file
+            validate_file(file)
+            
+            # Generate unique filename
+            filename = generate_unique_filename(file.filename)
+            
+            # Save uploaded file
+            file_path = save_uploaded_file(file, filename)
+            
+            # Create task in database
+            task = Task(
+                user_id=user.id,
+                status=TaskStatus.PENDING,
+                original_path=file_path,
+                task_metadata=json.dumps({
+                    "original_filename": file.filename,
+                    "file_size": file.size
+                })
+            )
+            db.add(task)
+            db.commit()
+            db.refresh(task)
+            
+            # Start image processing task
+            process_image.delay(task.id)
+            
+            task_ids.append(task.id)
+        
+        response = NewTasksResponse(
+            task_ids=task_ids,
+            message=f"Successfully created {len(task_ids)} tasks"
+        )
+        
+        return response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to create tasks: {str(e)}"
+        )
+
+
+@router.get("/api/tasks", response_model=TaskListResponse)
+async def get_user_tasks(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(10, ge=1, le=100)
+):
+    """Get user's tasks with pagination"""
+    try:
+        # Calculate offset
+        offset = (page - 1) * per_page
+        
+        # Get total count
+        total = db.query(Task).filter(Task.user_id == user.id).count()
+        
+        # Get tasks with pagination
+        tasks = db.query(Task).filter(Task.user_id == user.id)\
+            .order_by(Task.created_at.desc())\
+            .offset(offset)\
+            .limit(per_page)\
+            .all()
+        
+        return TaskListResponse(
+            tasks=tasks,
+            total=total,
+            page=page,
+            per_page=per_page
+        )
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to get tasks: {str(e)}"
+        )
+
+
 @router.get("/api/isReady/{task_id}", response_model=TaskStatusResponse)
 async def check_task_status(
     task_id: int,
@@ -131,7 +233,11 @@ async def check_task_status(
             id=task.id,
             status=task.status,
             result_path=task.result_path,
-            task_metadata=task.task_metadata
+            task_metadata=task.task_metadata,
+            tree_type=task.tree_type.value if task.tree_type else None,
+            tree_type_confidence=task.tree_type_confidence,
+            damages_detected=task.damages_detected,
+            overall_health_score=task.overall_health_score
         )
         
     except HTTPException:
