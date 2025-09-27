@@ -22,6 +22,9 @@ test: ## Run API tests
 demo: ## Run demo script
 	./demo.sh
 
+demo-v2: ## Run ML tree analysis demo
+	python3 demo_v2.py
+
 clean: ## Clean up temporary files
 	find . -type f -name "*.pyc" -delete
 	find . -type d -name "__pycache__" -delete

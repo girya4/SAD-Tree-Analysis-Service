@@ -1,6 +1,6 @@
-# Image Processing Service
+# Tree Analysis Service
 
-Сервис обработки изображений с использованием FastAPI, Celery, PostgreSQL и Redis.
+AI-powered tree analysis service with FastAPI, Celery, PostgreSQL and Redis. Uses machine learning to analyze tree health, detect damage, and provide treatment recommendations.
 
 ## Архитектура
 
@@ -122,6 +122,34 @@ make docker-down   # Остановить все Docker сервисы
 - **API документация**: http://localhost/docs
 - **Celery Flower**: http://localhost/flower/
 - **Health Check**: http://localhost/
+
+## 🌳 ML Tree Analysis Features
+
+### Tree Type Detection
+- Oak, Pine, Birch, Maple, Cherry, Unknown
+- Confidence scoring for each prediction
+
+### Damage Detection
+- Insect damage, Fungal infection, Bark damage
+- Leaf discoloration, Branch breakage, Root damage
+- Drought stress, Nutrient deficiency
+- Severity levels: Low, Medium, High
+
+### Health Assessment
+- Overall health score (0.0 - 1.0)
+- Treatment recommendations
+- Processing time: 5-25 seconds per image
+
+### API Endpoints
+- `POST /api/newTasks` - Upload multiple images
+- `GET /api/tasks` - List user tasks with ML results
+- `GET /api/isReady/{id}` - Get task status with analysis
+
+### Demo Commands
+```bash
+make demo-v2    # Run ML tree analysis demo
+make demo       # Run basic image processing demo
+```
 
 ## Структура проекта
 
