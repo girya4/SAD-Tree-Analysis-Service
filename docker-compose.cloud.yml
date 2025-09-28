@@ -3,12 +3,13 @@ version: '3.8'
 services:
   # Nginx Reverse Proxy
   nginx:
-    image: nginx:alpine
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.cloud.conf:/etc/nginx/nginx.conf:ro
       - ./frontend:/var/www/frontend:ro
       - ./uploads:/var/www/static/uploads:ro
       - ./ssl:/etc/nginx/ssl:ro
@@ -21,9 +22,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-    environment:
-      - NGINX_ENVSUBST_TEMPLATE_DIR=/etc/nginx/templates
-      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx/conf.d
 
   # PostgreSQL Database
   db:
