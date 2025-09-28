@@ -23,6 +23,12 @@ async def health_check():
     return {"status": "healthy", "message": "Image processing service is running"}
 
 
+@router.get("/health", response_model=dict)
+async def health_check_alt():
+    """Alternative health check endpoint"""
+    return {"status": "healthy", "message": "Image processing service is running"}
+
+
 @router.get("/api/get-session")
 async def get_session(
     request: Request,
