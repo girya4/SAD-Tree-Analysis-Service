@@ -6,6 +6,18 @@ AI-powered tree analysis service with FastAPI, Celery, PostgreSQL and Redis. Use
 
 **NEW:** Version 2.3 includes optimized cloud deployment configuration and production-ready setup.
 
+### 🚀 Быстрое развертывание
+
+```bash
+# Автоматическое развертывание на новый сервер
+./quick-deploy.sh YOUR_SERVER_IP
+
+# Подробное развертывание с настройками
+./deploy.sh YOUR_SERVER_IP root
+```
+
+**Документация по развертыванию:** [DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md)
+
 ## 🌩️ Version 2.2 - Cloud Deployment Ready
 
 Version 2.2 includes optimized cloud deployment configuration for Yandex Cloud and other cloud platforms. See [README-CLOUD.md](README-CLOUD.md) for detailed cloud deployment instructions.

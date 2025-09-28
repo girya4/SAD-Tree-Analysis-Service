@@ -56,6 +56,18 @@ demo-v2: ## Run ML tree analysis demo
 demo-v2.1: ## Run enhanced UI demo with image thumbnails
 	./demo_v2.1.sh
 
+# Deployment
+deploy: ## Deploy to server (requires SERVER_IP)
+	@if [ -z "$(SERVER_IP)" ]; then echo "Usage: make deploy SERVER_IP=your_server_ip"; exit 1; fi
+	./deploy.sh $(SERVER_IP)
+
+quick-deploy: ## Quick deploy to server (requires SERVER_IP)
+	@if [ -z "$(SERVER_IP)" ]; then echo "Usage: make quick-deploy SERVER_IP=your_server_ip"; exit 1; fi
+	./quick-deploy.sh $(SERVER_IP)
+
+manual-deploy: ## Manual deployment on current machine
+	./manual-deploy.sh
+
 # Cleanup
 clean: ## Clean up temporary files
 	find . -type f -name "*.pyc" -delete
