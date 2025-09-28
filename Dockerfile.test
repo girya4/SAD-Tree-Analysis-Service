@@ -1,0 +1,36 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    g++ \
+    libpq-dev \
+    libffi-dev \
+    libssl-dev \
+    curl \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Playwright and browsers
+RUN pip install playwright
+RUN playwright install chromium
+
+# Copy application code
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p uploads/original uploads/processed logs
+
+# Set environment variables for testing
+ENV TESTING=true
+ENV DEBUG=true
+ENV PYTHONPATH=/app
+
+# Default command for testing
+CMD ["pytest", "tests/", "-v", "--cov=app", "--cov-report=html", "--cov-report=term-missing"]

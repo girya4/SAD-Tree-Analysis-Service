@@ -2,9 +2,13 @@
 
 AI-powered tree analysis service with FastAPI, Celery, PostgreSQL and Redis. Uses machine learning to analyze tree health, detect damage, and provide treatment recommendations.
 
-## 🚀 Version 2.2 - Cloud Deployment Ready
+## 🚀 Version 2.3 - Testing & CI/CD Ready
 
-**NEW:** Version 2.2 includes optimized cloud deployment configuration for Yandex Cloud and other cloud platforms. See [README-CLOUD.md](README-CLOUD.md) for detailed cloud deployment instructions.
+**NEW:** Version 2.3 includes comprehensive testing framework and CI/CD pipeline with GitHub Actions. See [README-TESTING.md](README-TESTING.md) for detailed testing and CI/CD instructions.
+
+## 🌩️ Version 2.2 - Cloud Deployment Ready
+
+Version 2.2 includes optimized cloud deployment configuration for Yandex Cloud and other cloud platforms. See [README-CLOUD.md](README-CLOUD.md) for detailed cloud deployment instructions.
 
 ## Архитектура
 
@@ -112,12 +116,19 @@ python run_worker.py
 ### Полезные команды
 
 ```bash
-make help          # Показать все доступные команды
-make setup         # Настроить окружение разработки
-make test          # Запустить тесты API
-make clean         # Очистить временные файлы
-make docker-logs   # Показать логи Docker контейнеров
-make docker-down   # Остановить все Docker сервисы
+make help              # Показать все доступные команды
+make setup             # Настроить окружение разработки
+make test              # Запустить все тесты
+make test-unit         # Запустить unit тесты
+make test-integration  # Запустить интеграционные тесты
+make test-e2e          # Запустить end-to-end тесты
+make test-coverage     # Запустить тесты с покрытием кода
+make lint              # Проверить качество кода
+make security          # Проверить безопасность
+make ci                # Запустить все CI проверки
+make clean             # Очистить временные файлы
+make docker-logs       # Показать логи Docker контейнеров
+make docker-down       # Остановить все Docker сервисы
 ```
 
 ## Мониторинг
@@ -196,9 +207,19 @@ LCT_tree_task/
 │   │   ├── user.py           # Модель пользователя
 │   │   └── task.py           # Модель задачи
 │   ├── services/
-│   │   └── image_processor.py # Celery задачи
+│   │   ├── image_processor.py # Обработка изображений
+│   │   └── ml_tree_analyzer.py # ML анализ деревьев
 │   └── utils/
 │       └── file_utils.py     # Утилиты для работы с файлами
+├── tests/                    # Тесты (v2.3)
+│   ├── unit/                # Unit тесты
+│   ├── integration/         # Интеграционные тесты
+│   ├── e2e/                 # End-to-end тесты
+│   └── conftest.py          # Pytest конфигурация
+├── .github/workflows/       # GitHub Actions (v2.3)
+│   ├── ci.yml              # Continuous Integration
+│   ├── cd.yml              # Continuous Deployment
+│   └── security.yml        # Security scanning
 ├── uploads/
 │   ├── original/             # Исходные файлы
 │   └── processed/            # Обработанные файлы
@@ -206,9 +227,18 @@ LCT_tree_task/
 ├── celery_app.py            # Конфигурация Celery
 ├── config.py                # Настройки приложения
 ├── docker-compose.yml       # Docker Compose конфигурация
+├── docker-compose.test.yml  # Docker Compose для тестов (v2.3)
+├── docker-compose.cloud.yml # Docker Compose для облака (v2.2)
 ├── Dockerfile               # Dockerfile для backend
+├── Dockerfile.cloud         # Dockerfile для облака (v2.2)
 ├── Dockerfile.worker        # Dockerfile для Celery worker
-└── requirements.txt         # Python зависимости
+├── Dockerfile.worker.cloud  # Dockerfile для worker в облаке (v2.2)
+├── Dockerfile.test          # Dockerfile для тестов (v2.3)
+├── requirements.txt         # Python зависимости
+├── pytest.ini              # Pytest конфигурация (v2.3)
+├── Makefile                 # Команды для разработки
+├── README-TESTING.md        # Документация по тестированию (v2.3)
+└── README-CLOUD.md          # Документация по облачному развертыванию (v2.2)
 ```
 
 ## Обработка изображений
