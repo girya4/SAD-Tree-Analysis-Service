@@ -2,6 +2,10 @@
 
 AI-powered tree analysis service with FastAPI, Celery, PostgreSQL and Redis. Uses machine learning to analyze tree health, detect damage, and provide treatment recommendations.
 
+## 🚀 Version 2.2 - Cloud Deployment Ready
+
+**NEW:** Version 2.2 includes optimized cloud deployment configuration for Yandex Cloud and other cloud platforms. See [README-CLOUD.md](README-CLOUD.md) for detailed cloud deployment instructions.
+
 ## Архитектура
 
 - **FastAPI** - веб-фреймворк для API
