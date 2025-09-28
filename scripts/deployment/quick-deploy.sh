@@ -50,9 +50,9 @@ ssh $USERNAME@$SERVER_IP << EOF
     # Создание .env файла
     if [ ! -f .env ]; then
         cp env.cloud.example .env
-        echo "POSTGRES_PASSWORD=\$(openssl rand -base64 32)" >> .env
-        echo "REDIS_PASSWORD=\$(openssl rand -base64 32)" >> .env
-        echo "SECRET_KEY=\$(openssl rand -base64 64)" >> .env
+        echo "POSTGRES_PASSWORD=\$(openssl rand -hex 32)" >> .env
+        echo "REDIS_PASSWORD=\$(openssl rand -hex 32)" >> .env
+        echo "SECRET_KEY=\$(openssl rand -hex 64)" >> .env
     fi
     
     # Создание директорий

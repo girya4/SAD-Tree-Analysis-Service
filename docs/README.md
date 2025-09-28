@@ -10,61 +10,17 @@ AI-powered tree analysis service with FastAPI, Celery, PostgreSQL and Redis. Use
 
 ```bash
 # Автоматическое развертывание на новый сервер
-./deploy.sh YOUR_SERVER_IP
+./quick-deploy.sh YOUR_SERVER_IP
 
-# Локальное развертывание
-./deploy.sh local
-
-# Через Makefile
-make deploy SERVER_IP=YOUR_SERVER_IP
-make deploy-local
+# Подробное развертывание с настройками
+./deploy.sh YOUR_SERVER_IP root
 ```
 
-**Документация по развертыванию:** [docs/DEPLOYMENT-GUIDE.md](docs/DEPLOYMENT-GUIDE.md)
-
-## 📁 Структура проекта
-
-```
-LCT_tree_task/
-├── app/                    # Основное приложение
-│   ├── api/               # API endpoints
-│   ├── config/            # Конфигурация ML
-│   ├── core/              # Основные компоненты
-│   ├── models/            # Модели данных
-│   ├── services/          # Бизнес-логика
-│   └── utils/             # Утилиты
-├── docker/                # Docker конфигурации
-│   ├── Dockerfile.cloud
-│   ├── Dockerfile.nginx
-│   ├── Dockerfile.worker.cloud
-│   └── docker-compose.cloud.yml
-├── scripts/               # Скрипты
-│   ├── deployment/        # Скрипты развертывания
-│   └── demo/              # Демо скрипты
-├── docs/                  # Документация
-│   ├── DEPLOYMENT-GUIDE.md
-│   ├── README-CLOUD.md
-│   └── SSH-SETUP.md
-├── config/                # Конфигурационные файлы
-│   └── env.cloud.example
-├── frontend/              # Фронтенд
-│   └── index.html
-├── nginx/                 # Nginx конфигурации
-│   ├── nginx.simple.conf
-│   └── nginx.cloud.conf
-├── uploads/               # Загруженные файлы
-│   ├── original/
-│   └── processed/
-├── logs/                  # Логи
-├── ssl/                   # SSL сертификаты
-├── deploy.sh              # Главный скрипт развертывания
-├── Makefile               # Команды для разработки
-└── requirements.txt       # Python зависимости
-```
+**Документация по развертыванию:** [DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md)
 
 ## 🌩️ Version 2.2 - Cloud Deployment Ready
 
-Version 2.2 includes optimized cloud deployment configuration for Yandex Cloud and other cloud platforms. See [docs/README-CLOUD.md](docs/README-CLOUD.md) for detailed cloud deployment instructions.
+Version 2.2 includes optimized cloud deployment configuration for Yandex Cloud and other cloud platforms. See [README-CLOUD.md](README-CLOUD.md) for detailed cloud deployment instructions.
 
 ## Архитектура
 
@@ -241,6 +197,43 @@ make demo       # Run basic image processing demo
 - Damage type configuration examples
 - Output field modification guides
 - Database migration notes
+
+## Структура проекта
+
+```
+LCT_tree_task/
+├── app/
+│   ├── api/
+│   │   ├── routes.py          # API endpoints
+│   │   └── schemas.py         # Pydantic модели
+│   ├── core/
+│   │   ├── auth.py           # Авторизация через Cookie
+│   │   ├── database.py       # Настройки БД
+│   │   └── middleware.py     # Middleware
+│   ├── models/
+│   │   ├── user.py           # Модель пользователя
+│   │   └── task.py           # Модель задачи
+│   ├── services/
+│   │   ├── image_processor.py # Обработка изображений
+│   │   └── ml_tree_analyzer.py # ML анализ деревьев
+│   └── utils/
+│       └── file_utils.py     # Утилиты для работы с файлами
+├── uploads/
+│   ├── original/             # Исходные файлы
+│   └── processed/            # Обработанные файлы
+├── main.py                   # Точка входа FastAPI
+├── celery_app.py            # Конфигурация Celery
+├── config.py                # Настройки приложения
+├── docker-compose.yml       # Docker Compose конфигурация
+├── docker-compose.cloud.yml # Docker Compose для облака (v2.2)
+├── Dockerfile               # Dockerfile для backend
+├── Dockerfile.cloud         # Dockerfile для облака (v2.2)
+├── Dockerfile.worker        # Dockerfile для Celery worker
+├── Dockerfile.worker.cloud  # Dockerfile для worker в облаке (v2.2)
+├── requirements.txt         # Python зависимости
+├── Makefile                 # Команды для разработки
+└── README-CLOUD.md          # Документация по облачному развертыванию (v2.2)
+```
 
 ## Обработка изображений
 

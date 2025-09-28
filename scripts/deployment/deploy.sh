@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# LCT Tree Analysis Service - Главный скрипт развертывания
+# LCT Tree Analysis Service - Автоматический скрипт развертывания
 # Использование: ./deploy.sh [SERVER_IP] [USERNAME]
 
 set -e
@@ -33,100 +33,11 @@ error() {
 if [ $# -lt 1 ]; then
     echo "Использование: $0 <SERVER_IP> [USERNAME]"
     echo "Пример: $0 158.160.195.121 root"
-    echo ""
-    echo "Доступные команды:"
-    echo "  ./deploy.sh SERVER_IP          - Полное развертывание"
-    echo "  ./deploy.sh SERVER_IP quick    - Быстрое развертывание"
-    echo "  ./deploy.sh local              - Локальное развертывание"
     exit 1
 fi
 
 SERVER_IP=$1
 USERNAME=${2:-root}
-DEPLOY_TYPE=${3:-full}
-
-if [ "$SERVER_IP" = "local" ]; then
-    log "Локальное развертывание LCT Tree Analysis Service"
-    
-    # Проверка Docker
-    if ! command -v docker &> /dev/null; then
-        error "Docker не установлен. Установите Docker и попробуйте снова."
-        exit 1
-    fi
-    
-    if ! command -v docker-compose &> /dev/null; then
-        error "Docker Compose не установлен. Установите Docker Compose и попробуйте снова."
-        exit 1
-    fi
-    
-    # Создание .env файла
-    if [ ! -f .env ]; then
-        log "Создаем .env файл..."
-        cp config/env.cloud.example .env
-        
-        # Генерация паролей
-        POSTGRES_PASSWORD=$(openssl rand -hex 32)
-        REDIS_PASSWORD=$(openssl rand -hex 32)
-        SECRET_KEY=$(openssl rand -hex 64)
-        
-        echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env
-        echo "REDIS_PASSWORD=$REDIS_PASSWORD" >> .env
-        echo "SECRET_KEY=$SECRET_KEY" >> .env
-        
-        success ".env файл создан с безопасными паролями"
-    fi
-    
-    # Создание директорий
-    log "Создаем необходимые директории..."
-    mkdir -p uploads/original uploads/processed logs ssl
-    chmod -R 755 uploads/
-    success "Директории созданы"
-    
-    # Остановка предыдущих контейнеров
-    log "Останавливаем предыдущие контейнеры..."
-    docker-compose -f docker/docker-compose.cloud.yml down 2>/dev/null || true
-    
-    # Запуск приложения
-    log "Запускаем приложение..."
-    docker-compose -f docker/docker-compose.cloud.yml up -d --build
-    
-    # Ожидание запуска
-    log "Ожидаем запуска сервисов..."
-    sleep 30
-    
-    # Проверка статуса
-    log "Проверяем статус сервисов..."
-    docker-compose -f docker/docker-compose.cloud.yml ps
-    
-    # Проверка работы
-    log "Проверяем работу приложения..."
-    sleep 10
-    
-    if curl -s http://localhost/ | grep -q "Tree Analysis Service"; then
-        success "Фронтенд работает: http://localhost/"
-    else
-        warning "Фронтенд может не работать"
-    fi
-    
-    if curl -s http://localhost/api/tasks | grep -q "tasks"; then
-        success "API работает: http://localhost/api/tasks"
-    else
-        warning "API может не работать"
-    fi
-    
-    if curl -s http://localhost/health | grep -q "healthy"; then
-        success "Health check работает: http://localhost/health"
-    else
-        warning "Health check может не работать"
-    fi
-    
-    echo ""
-    success "🎉 Локальное развертывание завершено!"
-    echo "🌐 Приложение доступно по адресу: http://localhost/"
-    exit 0
-fi
-
-# Удаленное развертывание
 SERVER_PATH="/home/$USERNAME/lct-tree-analysis"
 
 log "Начинаем развертывание LCT Tree Analysis Service на $SERVER_IP"
@@ -139,8 +50,6 @@ if ! ssh -o ConnectTimeout=10 -o BatchMode=yes $USERNAME@$SERVER_IP exit 2>/dev/
     error "1. Сервер доступен"
     error "2. SSH ключи настроены"
     error "3. Пользователь $USERNAME существует"
-    error ""
-    error "Для настройки SSH см. docs/SSH-SETUP.md"
     exit 1
 fi
 success "Подключение к серверу успешно"
@@ -152,7 +61,7 @@ ssh $USERNAME@$SERVER_IP << 'EOF'
     apt update && apt upgrade -y
     
     # Установка необходимых пакетов
-    apt install -y curl wget unzip git openssl
+    apt install -y curl wget unzip git
     
     # Установка Docker
     if ! command -v docker &> /dev/null; then
@@ -188,7 +97,7 @@ ssh $USERNAME@$SERVER_IP << EOF
     
     # Создание .env файла
     if [ ! -f .env ]; then
-        cp config/env.cloud.example .env
+        cp env.cloud.example .env
         
         # Генерация безопасных паролей
         POSTGRES_PASSWORD=\$(openssl rand -hex 32)
@@ -209,18 +118,15 @@ ssh $USERNAME@$SERVER_IP << EOF
     mkdir -p uploads/original uploads/processed logs ssl
     chmod -R 755 uploads/
     
-    # Очистка базы данных и файлов
-    rm -rf uploads/original/* uploads/processed/* 2>/dev/null || true
-    
     # Запуск приложения
-    docker-compose -f docker/docker-compose.cloud.yml down -v 2>/dev/null || true
-    docker-compose -f docker/docker-compose.cloud.yml up -d --build
+    docker-compose -f docker-compose.cloud.yml down 2>/dev/null || true
+    docker-compose -f docker-compose.cloud.yml up -d --build
     
     # Ожидание запуска
     sleep 30
     
     # Проверка статуса
-    docker-compose -f docker/docker-compose.cloud.yml ps
+    docker-compose -f docker-compose.cloud.yml ps
 EOF
 
 success "Приложение настроено и запущено"
@@ -234,7 +140,7 @@ if curl -s http://$SERVER_IP/ | grep -q "Tree Analysis Service"; then
     success "Фронтенд работает: http://$SERVER_IP/"
 else
     warning "Фронтенд может не работать. Проверьте логи:"
-    ssh $USERNAME@$SERVER_IP "cd $SERVER_PATH && docker-compose -f docker/docker-compose.cloud.yml logs nginx"
+    ssh $USERNAME@$SERVER_IP "cd $SERVER_PATH && docker-compose -f docker-compose.cloud.yml logs nginx"
 fi
 
 # Проверка API
@@ -242,7 +148,7 @@ if curl -s http://$SERVER_IP/api/tasks | grep -q "tasks"; then
     success "API работает: http://$SERVER_IP/api/tasks"
 else
     warning "API может не работать. Проверьте логи:"
-    ssh $USERNAME@$SERVER_IP "cd $SERVER_PATH && docker-compose -f docker/docker-compose.cloud.yml logs backend"
+    ssh $USERNAME@$SERVER_IP "cd $SERVER_PATH && docker-compose -f docker-compose.cloud.yml logs backend"
 fi
 
 # Проверка health check
@@ -250,7 +156,7 @@ if curl -s http://$SERVER_IP/health | grep -q "healthy"; then
     success "Health check работает: http://$SERVER_IP/health"
 else
     warning "Health check может не работать. Проверьте логи:"
-    ssh $USERNAME@$SERVER_IP "cd $SERVER_PATH && docker-compose -f docker/docker-compose.cloud.yml logs backend"
+    ssh $USERNAME@$SERVER_IP "cd $SERVER_PATH && docker-compose -f docker-compose.cloud.yml logs backend"
 fi
 
 echo ""
@@ -262,8 +168,8 @@ echo "   API: http://$SERVER_IP/api/tasks"
 echo "   Health: http://$SERVER_IP/health"
 echo ""
 echo "📋 Полезные команды для управления:"
-echo "   ssh $USERNAME@$SERVER_IP 'cd $SERVER_PATH && docker-compose -f docker/docker-compose.cloud.yml ps'"
-echo "   ssh $USERNAME@$SERVER_IP 'cd $SERVER_PATH && docker-compose -f docker/docker-compose.cloud.yml logs'"
-echo "   ssh $USERNAME@$SERVER_IP 'cd $SERVER_PATH && docker-compose -f docker/docker-compose.cloud.yml restart'"
+echo "   ssh $USERNAME@$SERVER_IP 'cd $SERVER_PATH && docker-compose -f docker-compose.cloud.yml ps'"
+echo "   ssh $USERNAME@$SERVER_IP 'cd $SERVER_PATH && docker-compose -f docker-compose.cloud.yml logs'"
+echo "   ssh $USERNAME@$SERVER_IP 'cd $SERVER_PATH && docker-compose -f docker-compose.cloud.yml restart'"
 echo ""
-echo "📖 Подробная документация: docs/DEPLOYMENT-GUIDE.md"
+echo "📖 Подробная документация: DEPLOYMENT-GUIDE.md"

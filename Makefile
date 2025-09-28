@@ -37,36 +37,36 @@ docker-restart: ## Restart all Docker services
 
 # Cloud deployment
 docker-build-cloud: ## Build cloud-optimized Docker images
-	docker build -f Dockerfile.cloud -t lct-tree-analysis:latest .
-	docker build -f Dockerfile.worker.cloud -t lct-tree-analysis-worker:latest .
+	docker build -f docker/Dockerfile.cloud -t lct-tree-analysis:latest .
+	docker build -f docker/Dockerfile.worker.cloud -t lct-tree-analysis-worker:latest .
 
 docker-up-cloud: ## Start cloud deployment
-	docker-compose -f docker-compose.cloud.yml up -d
+	docker-compose -f docker/docker-compose.cloud.yml up -d
 
 docker-down-cloud: ## Stop cloud deployment
-	docker-compose -f docker-compose.cloud.yml down
+	docker-compose -f docker/docker-compose.cloud.yml down
 
 # Demo commands
 demo: ## Run demo script
-	./demo.sh
+	./scripts/demo/demo.sh
 
 demo-v2: ## Run ML tree analysis demo
-	python3 demo_v2.py
+	python3 scripts/demo/demo_v2.py
 
 demo-v2.1: ## Run enhanced UI demo with image thumbnails
-	./demo_v2.1.sh
+	./scripts/demo/demo_v2.1.sh
 
 # Deployment
 deploy: ## Deploy to server (requires SERVER_IP)
 	@if [ -z "$(SERVER_IP)" ]; then echo "Usage: make deploy SERVER_IP=your_server_ip"; exit 1; fi
 	./deploy.sh $(SERVER_IP)
 
-quick-deploy: ## Quick deploy to server (requires SERVER_IP)
-	@if [ -z "$(SERVER_IP)" ]; then echo "Usage: make quick-deploy SERVER_IP=your_server_ip"; exit 1; fi
-	./quick-deploy.sh $(SERVER_IP)
+deploy-local: ## Local deployment on current machine
+	./deploy.sh local
 
-manual-deploy: ## Manual deployment on current machine
-	./manual-deploy.sh
+deploy-quick: ## Quick deploy to server (requires SERVER_IP)
+	@if [ -z "$(SERVER_IP)" ]; then echo "Usage: make deploy-quick SERVER_IP=your_server_ip"; exit 1; fi
+	./deploy.sh $(SERVER_IP) root quick
 
 # Cleanup
 clean: ## Clean up temporary files
@@ -78,7 +78,7 @@ clean: ## Clean up temporary files
 
 clean-docker: ## Clean up Docker resources
 	docker-compose down -v
-	docker-compose -f docker-compose.cloud.yml down -v
+	docker-compose -f docker/docker-compose.cloud.yml down -v
 	docker system prune -f
 
 # Setup
