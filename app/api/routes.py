@@ -11,8 +11,10 @@ from app.api.schemas import (
 )
 from app.utils.file_utils import validate_file, generate_unique_filename, save_uploaded_file
 from app.services.image_processor import process_image
+from app.services.ml_tree_analyzer import ml_analyzer
 from config import settings
 import json
+import os
 
 router = APIRouter()
 
@@ -287,4 +289,50 @@ async def webhook_task_complete(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to update task: {str(e)}"
+        )
+
+
+@router.post("/api/analyze")
+async def analyze_image_with_ml(
+    image: UploadFile = File(...),
+):
+    """
+    Analyze single image using ML (YOLO or Mock)
+    
+    This endpoint uses real YOLO models if available and configured,
+    otherwise falls back to mock data. Perfect for React frontend.
+    """
+    try:
+        # Validate uploaded file
+        validate_file(image)
+        
+        # Generate unique filename and save
+        filename = generate_unique_filename(image.filename)
+        file_path = save_uploaded_file(image, filename)
+        
+        try:
+            # Analyze using ML (YOLO or Mock)
+            results = ml_analyzer.analyze_for_react_frontend(file_path)
+            
+            # Add metadata
+            results['_metadata'] = {
+                'analysis_method': 'YOLO' if ml_analyzer.use_real_ml else 'Mock',
+                'original_filename': image.filename,
+                'file_size': image.size,
+                'models_available': ml_analyzer.use_real_ml
+            }
+            
+            return results
+            
+        finally:
+            # Clean up uploaded file
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to analyze image: {str(e)}"
         )

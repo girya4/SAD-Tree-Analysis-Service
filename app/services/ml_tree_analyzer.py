@@ -1,49 +1,153 @@
 """
-ML Tree Analysis Service - Mock Implementation
-Simulates tree analysis using machine learning
+ML Tree Analysis Service - Real YOLO Implementation
+Uses YOLO models for tree analysis
 """
 import random
 import time
 import json
-from typing import Dict, List, Tuple
+import os
+from typing import Dict, List, Tuple, Optional
 from app.models.task import TreeType, DamageType
 from app.config.ml_config import ml_config
+
+# Import YOLO analyzer
+try:
+    from app.services.yolo_analyzer import analyze_tree_image_yolo
+    YOLO_AVAILABLE = True
+    print("YOLO analyzer loaded successfully")
+except ImportError as e:
+    print(f"YOLO analyzer not available: {e}")
+    YOLO_AVAILABLE = False
 
 
 class MLTreeAnalyzer:
     """
-    Mock ML service for tree analysis
-    Simulates processing time and returns realistic results
+    Real YOLO ML service for tree analysis
+    Uses YOLO models for actual tree detection and analysis
     """
     
     def __init__(self):
         self.config = ml_config
+        # Always use real ML - YOLO only
+        self.use_real_ml = YOLO_AVAILABLE
+        
+        if self.use_real_ml:
+            print("Using real YOLO ML models for analysis")
+        else:
+            print("ERROR: YOLO models not available!")
+            raise RuntimeError("YOLO models are required but not available")
     
     def analyze_tree(self, image_path: str, additional_params: Dict = None) -> Dict:
         """
-        Analyze tree image and return ML results
-        
+        Analyze tree image using YOLO models
+
         Args:
             image_path: Path to the tree image
             additional_params: Additional parameters for analysis
-            
+
         Returns:
-            Dict with analysis results
+            Dict with YOLO analysis results
         """
-        # Simulate processing time
-        processing_time = random.uniform(*self.config.PROCESSING_TIME_RANGE)
-        time.sleep(processing_time)
+        start_time = time.time()
         
-        # Generate mock results
-        results = self._generate_mock_results()
+        # Use real YOLO analysis
+        try:
+            results = self._analyze_with_yolo(image_path)
+        except Exception as e:
+            print(f"YOLO analysis failed: {e}")
+            raise RuntimeError(f"YOLO analysis failed: {e}")
         
         # Add processing metadata
+        processing_time = time.time() - start_time
         results['processing_time'] = round(processing_time, 2)
         results['image_path'] = image_path
         results['additional_params'] = additional_params or {}
-        results['ml_model_version'] = self.config.ML_MODEL_VERSION
+        results['ml_model_version'] = "YOLO11"
+        results['analysis_method'] = "YOLO"
         
         return results
+    
+    def _analyze_with_yolo(self, image_path: str) -> Dict:
+        """
+        Analyze image using real YOLO models
+        
+        Args:
+            image_path: Path to the image
+            
+        Returns:
+            Dict with YOLO analysis results converted to legacy format
+        """
+        # Get YOLO results in React format
+        yolo_results = analyze_tree_image_yolo(image_path)
+        
+        # Convert to legacy format for backward compatibility
+        if yolo_results.get("trees"):
+            first_tree = yolo_results["trees"][0]  # Use first detected tree
+            
+            # Map species to TreeType enum
+            species_mapping = {
+                "Quercus robur": TreeType.OAK,
+                "Pinus sylvestris": TreeType.PINE,
+                "Betula pendula": TreeType.BIRCH,
+                "Acer platanoides": TreeType.MAPLE,
+            }
+            
+            tree_type = TreeType.UNKNOWN
+            for species, tree_enum in species_mapping.items():
+                if species in first_tree.get("вид", ""):
+                    tree_type = tree_enum
+                    break
+            
+            # Convert defects to legacy format
+            damages = []
+            for defect in first_tree.get("повреждения", []):
+                damage_info = {
+                    'type': 'bark_damage',  # Default type
+                    'confidence': 0.8,
+                    'severity': 'medium',
+                    'description': defect,
+                    'recommendations': ["Обратиться к специалисту"]
+                }
+                damages.append(damage_info)
+            
+            # Calculate health score based on defects
+            health_score = max(0.3, 1.0 - len(damages) * 0.2)
+            
+            return {
+                'tree_type': tree_type.value,
+                'tree_type_confidence': first_tree.get("достоверность_предсказания", 0.8),
+                'damages_detected': damages,
+                'overall_health_score': health_score,
+                'analysis_timestamp': time.time(),
+                'yolo_raw_data': yolo_results  # Keep original YOLO data
+            }
+        else:
+            # No trees detected, return default
+            return {
+                'tree_type': TreeType.UNKNOWN.value,
+                'tree_type_confidence': 0.0,
+                'damages_detected': [],
+                'overall_health_score': 0.5,
+                'analysis_timestamp': time.time(),
+                'yolo_raw_data': yolo_results
+            }
+    
+    def analyze_for_react_frontend(self, image_path: str) -> Dict:
+        """
+        Analyze image and return results in React frontend format
+        
+        Args:
+            image_path: Path to the image
+            
+        Returns:
+            Dict with results in React frontend format
+        """
+        try:
+            # Use real YOLO analysis directly
+            return analyze_tree_image_yolo(image_path)
+        except Exception as e:
+            print(f"YOLO analysis failed: {e}")
+            raise RuntimeError(f"YOLO analysis failed: {e}")
     
     def _generate_mock_results(self) -> Dict:
         """
