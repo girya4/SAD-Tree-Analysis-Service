@@ -8,6 +8,7 @@ services:
     volumes:
       - ../nginx/nginx.conf:/etc/nginx/nginx.conf:ro
       - ../frontend:/var/www/frontend:ro
+      - ../frontend_new:/var/www/frontend_new:ro
       - ../uploads:/var/www/static/uploads:ro
     depends_on:
       - backend

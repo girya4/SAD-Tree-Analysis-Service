@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug ML API</title>
+</head>
+<body>
+    <h1>Debug ML API</h1>
+    <input type="file" id="fileInput" accept="image/*">
+    <button onclick="testAPI()">Test API</button>
+    <div id="result"></div>
+
+    <script>
+        async function testAPI() {
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select a file first');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('image', file);
+                
+                console.log('🌐 Sending request to API...');
+                
+                const response = await fetch('/api/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log('✅ API Response:', data);
+                
+                document.getElementById('result').innerHTML = `
+                    <h2>API Response:</h2>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                    <h3>Trees found: ${data.trees ? data.trees.length : 0}</h3>
+                    ${data.trees ? data.trees.map((tree, i) => `
+                        <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                            <h4>Tree ${i + 1}</h4>
+                            <p><strong>Type:</strong> ${tree.вид}</p>
+                            <p><strong>Confidence:</strong> ${(tree.достоверность_предсказания * 100).toFixed(1)}%</p>
+                            <p><strong>Defects:</strong> ${tree.повреждения ? tree.повреждения.length : 0}</p>
+                            <p><strong>Position:</strong> x=${tree.x_координата_начала_рамки}, y=${tree.y_координата_начала_рамки}</p>
+                            <p><strong>Size:</strong> ${tree.ширина_рамки}x${tree.высота_рамки}</p>
+                        </div>
+                    `).join('') : ''}
+                `;
+                
+            } catch (error) {
+                console.error('❌ API Error:', error);
+                document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
