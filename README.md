@@ -1,4 +1,4 @@
-# Tree Analysis Service
+# SAD-Tree-Analysis-Service
 
 AI-powered tree analysis service with FastAPI, Celery, PostgreSQL and Redis. Uses machine learning to analyze tree health, detect damage, and provide treatment recommendations.
 
@@ -21,6 +21,14 @@ make deploy-local
 ```
 
 **Документация по развертыванию:** [docs/DEPLOYMENT-GUIDE.md](docs/DEPLOYMENT-GUIDE.md)
+
+### 🔧 Быстрый локальный запуск
+
+```bash
+cd docker
+docker-compose build
+docker-compose up -d
+```
 
 ## 📁 Структура проекта
 
