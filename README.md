@@ -6,23 +6,23 @@ AI-powered tree analysis service with FastAPI, Celery, PostgreSQL and Redis. Use
 
 **NEW:** Version 2.3 includes optimized cloud deployment configuration and production-ready setup.
 
-### 🚀 Быстрое развертывание
+### 🚀 Quick deployment
 
 ```bash
-# Автоматическое развертывание на новый сервер
+# Automatic deployment to a new server
 ./deploy.sh YOUR_SERVER_IP
 
-# Локальное развертывание
+# Local deployment
 ./deploy.sh local
 
-# Через Makefile
+# Using the Makefile
 make deploy SERVER_IP=YOUR_SERVER_IP
 make deploy-local
 ```
 
-**Документация по развертыванию:** [docs/DEPLOYMENT-GUIDE.md](docs/DEPLOYMENT-GUIDE.md)
+**Deployment documentation:** [docs/DEPLOYMENT-GUIDE.md](docs/DEPLOYMENT-GUIDE.md)
 
-### 🔧 Быстрый локальный запуск
+### 🔧 Quick local start
 
 ```bash
 cd docker
@@ -30,75 +30,75 @@ docker-compose build
 docker-compose up -d
 ```
 
-## 📁 Структура проекта
+## 📁 Project structure
 
 ```
 LCT_tree_task/
-├── app/                    # Основное приложение
+├── app/                    # Main application
 │   ├── api/               # API endpoints
-│   ├── config/            # Конфигурация ML
-│   ├── core/              # Основные компоненты
-│   ├── models/            # Модели данных
-│   ├── services/          # Бизнес-логика
-│   └── utils/             # Утилиты
-├── docker/                # Docker конфигурации
+│   ├── config/            # ML configuration
+│   ├── core/              # Core components
+│   ├── models/            # Data models
+│   ├── services/          # Business logic
+│   └── utils/             # Utilities
+├── docker/                # Docker configurations
 │   ├── Dockerfile.cloud
 │   ├── Dockerfile.nginx
 │   ├── Dockerfile.worker.cloud
 │   └── docker-compose.cloud.yml
-├── scripts/               # Скрипты
-│   ├── deployment/        # Скрипты развертывания
-│   └── demo/              # Демо скрипты
-├── docs/                  # Документация
+├── scripts/               # Scripts
+│   ├── deployment/        # Deployment scripts
+│   └── demo/              # Demo scripts
+├── docs/                  # Documentation
 │   ├── DEPLOYMENT-GUIDE.md
 │   ├── README-CLOUD.md
 │   └── SSH-SETUP.md
-├── config/                # Конфигурационные файлы
+├── config/                # Configuration files
 │   └── env.cloud.example
-├── frontend/              # Фронтенд
+├── frontend/              # Frontend
 │   └── index.html
-├── nginx/                 # Nginx конфигурации
+├── nginx/                 # Nginx configuration
 │   ├── nginx.simple.conf
 │   └── nginx.cloud.conf
-├── uploads/               # Загруженные файлы
+├── uploads/               # Uploaded files
 │   ├── original/
 │   └── processed/
-├── logs/                  # Логи
-├── ssl/                   # SSL сертификаты
-├── deploy.sh              # Главный скрипт развертывания
-├── Makefile               # Команды для разработки
-└── requirements.txt       # Python зависимости
+├── logs/                  # Logs
+├── ssl/                   # SSL certificates
+├── deploy.sh              # Main deployment script
+├── Makefile               # Development commands
+└── requirements.txt       # Python dependencies
 ```
 
 ## 🌩️ Version 2.2 - Cloud Deployment Ready
 
 Version 2.2 includes optimized cloud deployment configuration for Yandex Cloud and other cloud platforms. See [docs/README-CLOUD.md](docs/README-CLOUD.md) for detailed cloud deployment instructions.
 
-## Архитектура
+## Architecture
 
-- **FastAPI** - веб-фреймворк для API
-- **Celery** - система очередей для асинхронной обработки
-- **PostgreSQL** - база данных для хранения задач и пользователей
-- **Redis** - брокер сообщений для Celery
-- **Docker** - контейнеризация всех сервисов
+- **FastAPI** - web framework for the API
+- **Celery** - task queue for asynchronous processing
+- **PostgreSQL** - database for storing tasks and users
+- **Redis** - message broker for Celery
+- **Docker** - containerization for all services
 
-## Функциональность
+## Features
 
-- Загрузка изображений через API
-- Автоматическая авторизация через Cookie
-- Асинхронная обработка изображений
-- Отслеживание статуса задач
-- Webhook для обновления статусов
+- Uploading images via the API
+- Automatic authentication via cookies
+- Asynchronous image processing
+- Tracking task status
+- Webhook for status updates
 
 ## API Endpoints
 
 ### POST /api/newTask
-Загружает изображение и создает задачу обработки.
+Uploads an image and creates a processing task.
 
-**Параметры:**
-- `file` - файл изображения (multipart/form-data)
+**Parameters:**
+- `file` - image file (multipart/form-data)
 
-**Ответ:**
+**Response:**
 ```json
 {
   "task_id": 123,
@@ -107,9 +107,9 @@ Version 2.2 includes optimized cloud deployment configuration for Yandex Cloud a
 ```
 
 ### GET /api/isReady/{task_id}
-Проверяет статус задачи.
+Checks the task status.
 
-**Ответ:**
+**Response:**
 ```json
 {
   "id": 123,
@@ -122,7 +122,7 @@ Version 2.2 includes optimized cloud deployment configuration for Yandex Cloud a
 ### GET /
 Health check endpoint.
 
-**Ответ:**
+**Response:**
 ```json
 {
   "status": "healthy",
@@ -131,69 +131,69 @@ Health check endpoint.
 ```
 
 ### POST /api/webhook/task-complete
-Webhook для обновления статуса задачи (используется Celery).
+Webhook for updating the task status (used by Celery).
 
-## Запуск приложения
+## Running the application
 
-### С помощью Docker Compose (рекомендуется)
+### Using Docker Compose (recommended)
 
-1. Клонируйте репозиторий:
+1. Clone the repository:
 ```bash
 git clone <repository-url>
 cd LCT_tree_task
 ```
 
-2. Запустите все сервисы:
+2. Start all services:
 ```bash
 make docker-up
-# или
+# or
 docker-compose up --build
 ```
 
-3. Приложение будет доступно по адресу: http://localhost
+3. The application will be available at: http://localhost
 
-### Локальная разработка
+### Local development
 
-1. Установите зависимости:
+1. Install dependencies:
 ```bash
 make install
-# или
+# or
 pip install -r requirements.txt
 ```
 
-2. Запустите PostgreSQL и Redis локально
+2. Start PostgreSQL and Redis locally
 
-3. Запустите приложение:
+3. Run the application:
 ```bash
 make dev
-# или
+# or
 python run.py
 ```
 
-4. В другом терминале запустите Celery worker:
+4. In another terminal, start the Celery worker:
 ```bash
 make worker
-# или
+# or
 python run_worker.py
 ```
 
-### Полезные команды
+### Useful commands
 
 ```bash
-make help              # Показать все доступные команды
-make setup             # Настроить окружение разработки
-make test              # Запустить тесты API
-make clean             # Очистить временные файлы
-make docker-logs       # Показать логи Docker контейнеров
-make docker-down       # Остановить все Docker сервисы
-make docker-up-cloud   # Запустить облачное развертывание
-make docker-down-cloud # Остановить облачное развертывание
+make help              # Show all available commands
+make setup             # Set up the development environment
+make test              # Run API tests
+make clean             # Clean temporary files
+make docker-logs       # Show Docker container logs
+make docker-down       # Stop all Docker services
+make docker-up-cloud   # Start cloud deployment
+make docker-down-cloud # Stop cloud deployment
 ```
 
-## Мониторинг
+## Monitoring
 
 - **Frontend**: http://localhost/frontend/
-- **API документация**: http://localhost/docs
+- **API documentation**: http://localhost/docs
 - **Celery Flower**: http://localhost/flower/
 - **Health Check**: http://localhost/
 
@@ -250,25 +250,25 @@ make demo       # Run basic image processing demo
 - Output field modification guides
 - Database migration notes
 
-## Обработка изображений
+## Image processing
 
-Сервис выполняет следующие операции с изображениями:
-- Конвертация в RGB формат
-- Изменение размера (максимум 800x600 с сохранением пропорций)
-- Сохранение в JPEG формате с качеством 85%
-- Генерация метаданных (размеры, размер файла)
+The service performs the following operations on images:
+- Convert to RGB
+- Resize (max 800x600 while preserving aspect ratio)
+- Save as JPEG with quality 85%
+- Generate metadata (dimensions, file size)
 
-## Безопасность
+## Security
 
-- Автоматическая генерация уникальных cookie токенов
-- Валидация типов и размеров файлов
-- Проверка владения задачами
-- CORS настройки для кросс-доменных запросов
+- Automatic generation of unique cookie tokens
+- Validation of file types and sizes
+- Task ownership checks
+- CORS configuration for cross-domain requests
 
-## Масштабирование
+## Scaling
 
-Для увеличения производительности:
-1. Увеличьте количество Celery workers
-2. Используйте Redis Cluster
-3. Настройте PostgreSQL репликацию
-4. Добавьте балансировщик нагрузки
+To increase performance:
+1. Increase the number of Celery workers
+2. Use Redis Cluster
+3. Configure PostgreSQL replication
+4. Add a load balancer
